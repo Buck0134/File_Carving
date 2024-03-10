@@ -27,7 +27,7 @@ Before you begin, ensure you have Python 3 installed on your system. This applic
     Begin by cloning the repository to your local machine:
 
     ```sh
-    git clone https://github.com/your-repository/File_Carving.git
+    git clone https://github.com/Buck0134/File_Carving.git
     ```
 
 2. **Set up a virtual environment**
