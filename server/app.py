@@ -34,19 +34,39 @@ def file_md5():
 def mmls_info():
     file_path = request.args.get('file_path', '')
     
-    try:
-        # Ensure the path is within our base directory to prevent Directory Traversal
-        if not os.path.isabs(file_path) or os.path.normpath(file_path) != file_path:
-            raise ValueError("Path must be an absolute and normalized path")
+    def parse_mmls_output(output):
+        # Split output into metadata and sector info
+        meta_lines, sector_lines = output.strip().split('\n\n', 1)
+        # Parse sectors
+        sectors_info = []
+        for line in sector_lines.split('\n')[1:]:
+            parts = line.split(maxsplit=5)
+            if len(parts) == 6:
+                sector_info = {
+                    'Index': parts[0],
+                    'Slot': parts[1],
+                    'Start': parts[2],
+                    'End': parts[3],
+                    'Length': parts[4],
+                    'Description': parts[5]
+                }
+                sectors_info.append(sector_info)
 
-        # Run the mmls command
+        return meta_lines, sectors_info
+    
+    try:
+        # Path validation to prevent Directory Traversal
+        if not os.path.isabs(file_path) or os.path.normpath(file_path) != file_path:
+                    raise ValueError("Path must be an absolute and normalized path")
+        
+        # Execute mmls command
         result = subprocess.run(['mmls', file_path], capture_output=True, text=True)
-        print(result)
+        
         if result.returncode == 0:
-            # Successfully executed mmls
-            return jsonify({'info': result.stdout})
+            metadata, sectors_info = parse_mmls_output(result.stdout)
+            print(jsonify({'metadata': metadata, 'sectors_info': sectors_info}))
+            return jsonify({'metadata': metadata, 'sectors_info': sectors_info})
         else:
-            # mmls command failed
             return jsonify({'error': 'Failed to get MMLS info', 'details': result.stderr}), 400
     except Exception as e:
         return jsonify({'error': 'An error occurred', 'details': str(e)}), 500

@@ -39,7 +39,7 @@
                 .then(response => response.json())
                 .then(data => {
                     // Ensure you're correctly checking the presence of 'info' in the response
-                    if ('info' in data) {
+                    if ('metadata' in data) {
                         document.getElementById('mmlsData').textContent = `MMLS Info: ${data.info}`;
                     } else {
                         // Handle cases where 'info' is not in the response, such as errors
