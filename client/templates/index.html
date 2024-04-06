@@ -15,6 +15,7 @@
     <p id="md5Display"></p>
     <button id="fetchMmlsBtn" style="display:none;">Get MMLS Info</button>
     <p id="mmlsData"></p>
+    
 
     <script>
         let filePath = ''; // This will hold the file path state
@@ -48,8 +49,35 @@
                     }
                 })
                 .catch(error => console.error('Error fetching MMLS data:', error));
-
         });
+        function downloadFile() {
+            fetch('/api/extract-data-to-download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ // should not be hard coded
+                    file_path: "/Users/buckyy/Desktop/HostBasedForensics/midterm.dd",
+                    start_sector: 1,
+                    length: 63488,
+                    byte_size: 512
+                })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                // Specify the filename you want to download as
+                a.download = "Extracted_File.dd"; //should be dynamic based on user selection
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => console.error('Download error:', error));
+        }
     </script>
+    <button onclick="downloadFile()">Download File</button>
 </body>
 </html>
