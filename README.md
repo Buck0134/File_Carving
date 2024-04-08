@@ -61,3 +61,22 @@ To start the application, run the following command from the root directory of t
 
 ```sh
 python3 server/app.py
+```
+
+## References:
+- https://www.w3schools.com/js/js_htmldom_nodes.asp
+- https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table
+- https://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript
+- https://stackoverflow.com/questions/23175006/how-to-check-multiple-checkboxes-with-javascript
+- https://www.geeksforgeeks.org/convert-a-string-to-an-integer-in-javascript/
+- https://www.w3schools.com/jsref/met_win_alert.asp </br>
+CSS related:
+- https://www.w3schools.com/cssref/pr_text_white-space.php
+- https://www.shecodes.io/athena/1837-how-to-put-2-images-on-one-line-with-css
+- https://getbootstrap.com/docs/5.3/getting-started/introduction/
+- https://getbootstrap.com/docs/5.3/layout/columns/
+- https://getbootstrap.com/docs/4.0/content/tables/
+
+
+
+

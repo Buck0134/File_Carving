@@ -93,7 +93,7 @@ def extract_data_to_local():
         start_sector = int(start_sector)
         length = int(length)
         byte_size = int(byte_size)
-        skip = start_sector * byte_size
+        skip = start_sector
 
         # Ensure file_path is safe and exists
         if not os.path.isfile(file_path):
@@ -137,7 +137,7 @@ def extract_data_to_download():
         start_sector = int(start_sector)
         length = int(length)
         byte_size = int(byte_size)
-        skip = start_sector * byte_size
+        skip = start_sector
 
         # Ensure file_path is safe (additional checks might be needed)
         if not os.path.isfile(file_path):
