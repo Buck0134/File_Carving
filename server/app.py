@@ -14,6 +14,13 @@ app = Flask(__name__, template_folder='../client/templates')
 def home():
     return render_template('index.html')
 
+def check_if_sector_is_filesystem(file_path, sector_start):
+    # Build fls command with offset
+    cmd = ['fls', '-o', str(sector_start), file_path]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    # If command executes successfully, it's likely a file system
+    return result.returncode == 0
+
 @app.route('/api/file-md5', methods=['GET'])
 def file_md5():
     file_path = request.args.get('file_path', '')
@@ -35,6 +42,16 @@ def file_md5():
 @app.route('/api/mmls-info', methods=['GET'])
 def mmls_info():
     file_path = request.args.get('file_path', '')
+
+    def check_if_sector_is_filesystem(file_path, sector_start):
+        # Ensure sector_start is a number
+        if not sector_start.isdigit():
+            return False
+        # fls requires the sector offset to be passed as a sector unit, calculate it
+        sector_offset = int(sector_start)  # Assuming 512 bytes per sector
+        cmd = ['fls', '-o', str(sector_offset), file_path]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        return result.returncode == 0
     
     def parse_mmls_output(output):
         # Split output into metadata and sector info
@@ -45,16 +62,18 @@ def mmls_info():
         for line in sector_lines.split('\n')[1:]:
             parts = line.split(maxsplit=5)
             if len(parts) == 6:
+                is_filesystem = check_if_sector_is_filesystem(file_path, parts[2])  # Use 'Start' as the sector offset
                 sector_info = {
                     'Index': parts[0],
                     'Slot': parts[1],
                     'Start': parts[2],
                     'End': parts[3],
                     'Length': parts[4],
-                    'Description': parts[5]
+                    'Description': parts[5],
+                    'IsFileSystem': is_filesystem
                 }
                 sectors_info.append(sector_info)
-
+        print(sectors_info)
         return meta_lines, sectors_info
     
     try:
