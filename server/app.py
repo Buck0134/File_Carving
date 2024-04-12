@@ -6,6 +6,7 @@ import hashlib
 import shlex  # For safely creating argument lists
 import subprocess
 import tempfile
+import re
 
 
 app = Flask(__name__, template_folder='../client/templates')
@@ -181,6 +182,79 @@ def extract_data_to_download():
     except Exception as e:
         print(str(e))
         return jsonify({'error': 'An error occurred', 'details': str(e)}), 500
+    
+@app.route('/api/list-files', methods=['GET'])
+def list_files():
+    file_path = request.args.get('file_path', '')
+    start_sector = request.args.get('start_sector', '')
+    print("Info got")
+    try:
+        sector_offset = int(start_sector)
+    except ValueError:
+        return jsonify({'error': 'Invalid start_sector value'}), 400
+
+    # Construct and run the 'fls' command
+    cmd = ['fls', '-r', '-o', str(sector_offset), file_path]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    except subprocess.CalledProcessError as e:
+        return jsonify({'error': 'Failed to list files', 'details': str(e)}), 500
+
+    # Function to parse the output from fls
+    def parse_fls_output(fls_output):
+        lines = fls_output.strip().split("\n")
+        root = {"name": "root", "children": []}
+        current_path = [root]  # This acts as our stack
+
+        for line in lines[1:]:
+            if not line.strip():
+                continue
+            
+            parts = line.strip().split()
+            # Determine the level by counting the number of + at the start
+            level = parts[0].count('+') if parts[0].startswith('+') else 0
+
+            # Depending on whether the line starts with '+', adjust the index for type and inode
+            # since there are two patterns
+            # Pattern 1: Start with +
+            # Pattern 2: Start with d/d or r/r which means it is at the root directory
+            if level > 0:
+                type_index = 1
+                inode_index = 2
+                name_index = 3
+            else:
+                type_index = 0
+                inode_index = 1
+                name_index = 2
+
+            # Extract information based on calculated indices
+            entry_type = 'directory' if 'd/d' in parts[type_index] else 'file'
+            inode = parts[inode_index].strip(':')
+            name = ' '.join(parts[name_index:]).strip(': "')
+
+            # Manage the stack according to the current level
+            while len(current_path) > level + 1:
+                current_path.pop()
+
+            parent_node = current_path[-1]
+
+            # Create a new node
+            new_node = {
+                "name": name,
+                "type": entry_type,
+                "inode": inode,
+                "children": [] if entry_type == 'directory' else None
+            }
+
+            # Append the new node to the parent's children
+            parent_node["children"].append(new_node)
+
+            # If it's a directory, push it onto the stack
+            if entry_type == 'directory':
+                current_path.append(new_node)
+
+        return root
+    return jsonify(parse_fls_output(result.stdout))
 
 if __name__ == '__main__':
     app.run(debug=True)
