@@ -206,7 +206,7 @@ def list_files():
         root = {"name": "root", "children": []}
         current_path = [root]  # This acts as our stack
 
-        for line in lines[1:]:
+        for line in lines:
             if not line.strip():
                 continue
             
@@ -254,6 +254,7 @@ def list_files():
                 current_path.append(new_node)
 
         return root
+    print(result.stdout)
     return jsonify(parse_fls_output(result.stdout))
 
 if __name__ == '__main__':

@@ -151,6 +151,7 @@
                         const th_end = document.createElement("th");
                         const th_length = document.createElement("th");
                         const th_description = document.createElement("th");
+                        const th_viewfile = document.createElement("th");
                         // Header contents
                         const title_checkbox = document.createTextNode("");
                         const title_index = document.createTextNode("Index");
@@ -159,6 +160,7 @@
                         const title_end = document.createTextNode("End");
                         const title_length = document.createTextNode("Length");
                         const title_description = document.createTextNode("Description");
+                        const title_viewfile = document.createTextNode("Filesystem Files");
 
                         th_checkbox.appendChild(title_checkbox);
                         th_index.appendChild(title_index);
@@ -167,6 +169,7 @@
                         th_end.appendChild(title_end);
                         th_length.appendChild(title_length);
                         th_description.appendChild(title_description);
+                        th_viewfile.appendChild(title_viewfile);
 
                         title_tr.appendChild(th_checkbox);
                         title_tr.appendChild(th_index);
@@ -175,6 +178,7 @@
                         title_tr.appendChild(th_end);
                         title_tr.appendChild(th_length);
                         title_tr.appendChild(th_description);
+                        title_tr.appendChild(th_viewfile);
 
                         // Append the row to table header and append the table header to the table
                         title_thead.appendChild(title_tr)
@@ -193,9 +197,10 @@
                             const td_end = document.createElement("td");
                             const td_length = document.createElement("td");
                             const td_description = document.createElement("td");
+                            const td_viewfile = document.createElement("td");
                             // Get contents from data
                             // Code adpated from https://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript for dynamically creating checkboxes, on April 7th 2024
-                            const checkbox_element = document.createElement("input")
+                            var checkbox_element = document.createElement("input")
                             checkbox_element.type = "checkbox"
                             checkbox_element.class = "checkbox"
                             checkbox_element.name = "checkboxes"
@@ -205,6 +210,23 @@
                             const end = document.createTextNode(element.End);
                             const length = document.createTextNode(element.Length);
                             const description = document.createTextNode(element.Description);
+                            var is_filesystem = element.IsFileSystem;
+                            var viewfile_element = null; 
+                            if (is_filesystem){
+                                viewfile_element = document.createElement("button");
+                                // If the partition has a file system, enable the users to view the files
+                                // Code adapted from https://www.shecodes.io/athena/24803-how-to-change-button-label-with-javascript for updating button's name, on April 14th 2024
+                                viewfile_element.innerHTML = "View Files"
+                                // Set the onclick function to call the API
+                                // Code adapted from https://stackoverflow.com/questions/14034737/creating-a-button-dynamically-with-arguments-for-onclick and https://www.w3schools.com/jsref/event_onclick.asp
+                                // for setting onclick function for dynamically created buttons, on April 14th 2024
+                                viewfile_element.onclick = function() {
+                                    getFiles(element.Start);
+                                }
+                            } else {
+                                // If the partition not a file system, no files to view
+                                viewfile_element = document.createTextNode("No Files");
+                            }
                             // Add content to each row element
                             td_checkbox.appendChild(checkbox_element)
                             td_index.appendChild(index);
@@ -213,6 +235,7 @@
                             td_end.appendChild(end);
                             td_length.appendChild(length);
                             td_description.appendChild(description);
+                            td_viewfile.appendChild(viewfile_element)
                             // Append row elements to this row
                             tr.appendChild(td_checkbox)
                             tr.appendChild(td_index);
@@ -221,6 +244,7 @@
                             tr.appendChild(td_end);
                             tr.appendChild(td_length);
                             tr.appendChild(td_description);
+                            tr.appendChild(td_viewfile);
                             // Add a new row to the table body
                             tbody.appendChild(tr)
                             
@@ -238,6 +262,17 @@
                 })
                 .catch(error => console.error('Error fetching MMLS data:', error));
         });
+
+        function getFiles (start){
+            // Call the API to get all files for this file system
+            // Referenced https://www.geeksforgeeks.org/how-to-get-url-parameters-using-javascript/ for URL params seperators, on April 14th 2024
+            fetch(`/api/list-files?file_path=${encodeURIComponent(filePath)}&start_sector=${encodeURIComponent(start)}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                })
+                .catch(error => console.error('Error fetching MD5 data:', error));
+        }
 
         document.getElementById('combinedCarvingBtn').addEventListener('click', function() {
             // Code adapted from https://stackoverflow.com/questions/23175006/how-to-check-multiple-checkboxes-with-javascript for checking whether checkboxes are checked, on April 7th 2024

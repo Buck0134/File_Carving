@@ -69,7 +69,11 @@ python3 server/app.py
 - https://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript
 - https://stackoverflow.com/questions/23175006/how-to-check-multiple-checkboxes-with-javascript
 - https://www.geeksforgeeks.org/convert-a-string-to-an-integer-in-javascript/
-- https://www.w3schools.com/jsref/met_win_alert.asp </br>
+- https://www.w3schools.com/jsref/met_win_alert.asp 
+- https://www.shecodes.io/athena/24803-how-to-change-button-label-with-javascript
+- https://stackoverflow.com/questions/14034737/creating-a-button-dynamically-with-arguments-for-onclick
+- https://www.w3schools.com/jsref/event_onclick.asp
+- https://www.geeksforgeeks.org/how-to-get-url-parameters-using-javascript/</br>
 CSS related:
 - https://www.w3schools.com/cssref/pr_text_white-space.php
 - https://www.shecodes.io/athena/1837-how-to-put-2-images-on-one-line-with-css
