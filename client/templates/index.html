@@ -382,6 +382,10 @@
             for (var i = 0; i < childrens.length; i ++){
                 var currentNode = childrens[i];
 
+                // A new card for this child
+                const collapse_card = document.createElement("div");
+                collapse_card.setAttribute("class", "card");
+
                 if (currentNode.type == "directory"){
                     collapse_element_count += 1;
                     // Header elements:
@@ -413,16 +417,18 @@
                     // Connect them
                     collapse_head.appendChild(collapse_a);
                     collapse_body_wrapper.appendChild(collapse_body)
-                    // Append the current entry to the card body
-                    currentCardBody.appendChild(collapse_head);
-                    currentCardBody.appendChild(collapse_body_wrapper);
+                    collapse_card.appendChild(collapse_head);
+                    collapse_card.appendChild(collapse_body_wrapper);
                     
                 } else { // the current node is a file
                     const filename_field = document.createElement("div");
                     filename_field.innerHTML = currentNode.name + "   (" + currentNode.inode + ")"
                     filename_field.setAttribute("class", "files");
-                    currentCardBody.appendChild(filename_field)
+                    collapse_card.appendChild(filename_field)
                 }
+
+                // Append this child's collapse card to parent's body
+                currentCardBody.appendChild(collapse_card)
             }
 
             return;
