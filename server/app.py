@@ -254,7 +254,6 @@ def list_files():
                 current_path.append(new_node)
 
         return root
-    print(result.stdout)
     return jsonify(parse_fls_output(result.stdout))
 
 if __name__ == '__main__':

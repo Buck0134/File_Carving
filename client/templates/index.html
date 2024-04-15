@@ -70,11 +70,33 @@
         #mmlsData-meta{
             text-align: left;
         }
+        .files{
+            text-align: left;
+            padding-top: 10px;
+            padding-left: 28px;
+            padding-bottom: 10px;
+        }
+        #accordion-section{
+            margin-bottom: 50px;
+            text-align: left;
+            padding-left: 10px;
+            justify-content: left;
+
+        }
+        .card-header{
+            width: 20;
+            justify-content: left;
+        }
+        #reminder{
+            text-align: right;
+        }
     </style>
     
 </head>
 <body>
     <h2>Forensics File Carving Tool</h2>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
     <!-- Code adapted from https://getbootstrap.com/docs/5.3/layout/columns/ for utilizing columns to create a side bar in Bootstrap, on April 7th 2024 -->
     <div class="row"> 
         <div class="col-3">
@@ -91,22 +113,33 @@
             </div>
         </div>
         <div class="col-8">
-            <p id="partitionTable-title"></p>
-            <p id="mmlsData-meta"></p>
-            <!-- Code adapted from https://getbootstrap.com/docs/4.0/content/tables/ for formatting the table through Bootstrap, on April 7th 2024 -->
-            <table id="mmlsData-table" class="table table-striped table-bordered"></table>
-            <div class="carve-button-container">
-                <button id="combinedCarvingBtn" style="display:none;">Carve Together</button>
-                <button id="individualCarvingBtn" style="display:none;">Carve Individually</button>
+            <div id="partition-table-section"> 
+                <p id="partitionTable-title"></p>
+                <p id="mmlsData-meta"></p>
+                <!-- Code adapted from https://getbootstrap.com/docs/4.0/content/tables/ for formatting the table through Bootstrap, on April 7th 2024 -->
+                <table id="mmlsData-table" class="table table-striped table-bordered"></table>
+                <div class="carve-button-container">
+                    <button id="combinedCarvingBtn" style="display:none;">Carve Together</button>
+                    <button id="individualCarvingBtn" style="display:none;">Carve Individually</button>
+                </div>
+                <span id="errors"></span>
             </div>
-            <span id="errors"></span>
+
+            <!-- Code adapted from https://www.w3schools.com/bootstrap5/bootstrap_collapse.php for creating collapsed buttons, on April 7th 2024 -->
+            <div id="list-files-section">
+                <p id="file-list-title"></p>
+                <p id="reminder"></p>
+                <div id="accordion-section">
+                </div>
+            </div>
         </div>
     </div>
-    
+
 
     <script>
         let filePath = ''; // This will hold the file path state
         var partitions = null; // Stores the partition information
+        var collapse_element_count = 0;
 
         document.getElementById('filePathForm').addEventListener('submit', function(event) {
             event.preventDefault(); // Prevent the form from submitting the traditional way
@@ -129,8 +162,11 @@
                 .then(data => {
                     // Ensure the presence of partition table information in the response
                     if ('metadata' in data) {
-                        document.getElementById('mmlsData-meta').textContent = `${data.metadata}`;
-                        document.getElementById('partitionTable-title').textContent = "Partition Table";
+                        document.getElementById('list-files-section').style.display = 'none'; // Hide file table
+                        document.getElementById('partition-table-section').style.display = 'block'; // show partition table
+
+                        document.getElementById('mmlsData-meta').textContent = `${data.metadata}`; // Display the meta data
+                        document.getElementById('partitionTable-title').textContent = "Partition Table"; // Set the partition table title
                         partitions = data.sectors_info;
 
                         const table = document.getElementById('mmlsData-table');
@@ -221,7 +257,7 @@
                                 // Code adapted from https://stackoverflow.com/questions/14034737/creating-a-button-dynamically-with-arguments-for-onclick and https://www.w3schools.com/jsref/event_onclick.asp
                                 // for setting onclick function for dynamically created buttons, on April 14th 2024
                                 viewfile_element.onclick = function() {
-                                    getFiles(element.Start);
+                                    getFiles(element.Start, element.Index.substring(0, element.Index.length - 1)); // Get files in this partition
                                 }
                             } else {
                                 // If the partition not a file system, no files to view
@@ -263,15 +299,132 @@
                 .catch(error => console.error('Error fetching MMLS data:', error));
         });
 
-        function getFiles (start){
+        function getFiles (start, index){
             // Call the API to get all files for this file system
             // Referenced https://www.geeksforgeeks.org/how-to-get-url-parameters-using-javascript/ for URL params seperators, on April 14th 2024
             fetch(`/api/list-files?file_path=${encodeURIComponent(filePath)}&start_sector=${encodeURIComponent(start)}`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data)
+                    // console.log(data)
+                    document.getElementById('list-files-section').style.display = 'block'; // show file table
+                    document.getElementById('partition-table-section').style.display = 'none'; // hide partition table
+
+
+                    const collapse_section = document.getElementById('accordion-section');
+                    collapse_section.innerHTML = "" // Clear all previously displayed files
+                    var title = "Files in Partition " + index
+                    document.getElementById('file-list-title').textContent = title; // Set the section title
+                    document.getElementById('reminder').textContent = "Note: metadata address is shown in ()"; 
+
+                    collapse_element_count = 0;
+
+                    for (var i = 0; i < data.children.length; i ++){
+                        var currentNode = data.children[i];
+
+                        const collapse_card = document.createElement("div");
+                        collapse_card.setAttribute("class", "card");
+
+                        if (currentNode.type == "directory"){
+                            collapse_element_count += 1;
+                            // Header elements:
+                            const collapse_head = document.createElement("div");
+                            collapse_head.setAttribute("class", "card-header");
+
+                            const collapse_a = document.createElement("a");
+                            // Code adapted from https://www.w3schools.com/jsref/met_element_setattribute.asp for setting an element's attributes dynamically, on April 14th 2024
+                            collapse_a.setAttribute("class", "collapsed btn"); 
+                            var name1 = "#collapse" + collapse_element_count
+                            collapse_a.setAttribute("data-bs-toggle", "collapse");
+                            collapse_a.setAttribute("href", name1)
+                            collapse_a.innerHTML = currentNode.name + "   (" + currentNode.inode + ")";
+                            collapse_a.setAttribute("style", "font-weight:bold;") // Set folder text to be bold
+
+                            // Body elements:
+                            const collapse_body_wrapper = document.createElement("div");
+                            var name2 = "collapse" + collapse_element_count
+                            collapse_body_wrapper.setAttribute("id", name2);
+                            collapse_body_wrapper.setAttribute("class", "collapse");
+                            // collapse_body_wrapper.setAttribute("data-bs-parent", "#accordion-section"); // Do not want to close the other when expanding one
+
+                            const collapse_body = document.createElement("div");
+                            collapse_body.setAttribute("class", "card-body");
+                            
+                            // Recursive call for its children, passing on the current collapsed card's body, will append children to this body
+                            traverseNodes(currentNode.children, collapse_body)
+
+                            // Connect them
+                            collapse_head.appendChild(collapse_a);
+                            collapse_body_wrapper.appendChild(collapse_body)
+                            collapse_card.appendChild(collapse_head);
+                            collapse_card.appendChild(collapse_body_wrapper);
+
+                        } else { // the current node is a file
+                            const filename_field = document.createElement("div");
+                            filename_field.innerHTML = currentNode.name + "   (" + currentNode.inode + ")";
+                            filename_field.setAttribute("class", "files");
+                            collapse_card.appendChild(filename_field)
+                        }
+
+                        collapse_section.appendChild(collapse_card);                        
+                    }
                 })
-                .catch(error => console.error('Error fetching MD5 data:', error));
+                .catch(error => console.error('Error getting filesystem files:', error));
+        }
+
+        // Recursive helper function to traverse through all the nodes
+        function traverseNodes (childrens, currentCardBody){
+            // Base case: there is no child
+            if (childrens == null || childrens.length == 0) {
+                return;
+            }
+
+            for (var i = 0; i < childrens.length; i ++){
+                var currentNode = childrens[i];
+
+                if (currentNode.type == "directory"){
+                    collapse_element_count += 1;
+                    // Header elements:
+                    const collapse_head = document.createElement("div");
+                    collapse_head.setAttribute("class", "card-header");
+
+                    const collapse_a = document.createElement("a");
+                    // Code adapted from https://www.w3schools.com/jsref/met_element_setattribute.asp for setting an element's attributes dynamically, on April 14th 2024
+                    collapse_a.setAttribute("class", "collapsed btn"); 
+                    var name1 = "#collapse" + collapse_element_count
+                    collapse_a.setAttribute("data-bs-toggle", "collapse");
+                    collapse_a.setAttribute("href", name1)
+                    collapse_a.innerHTML = currentNode.name + "   (" + currentNode.inode + ")"
+                    collapse_a.setAttribute("style", "font-weight:bold;") // Set folder text to be bold
+
+                    // Body elements:
+                    const collapse_body_wrapper = document.createElement("div");
+                    var name2 = "collapse" + collapse_element_count
+                    collapse_body_wrapper.setAttribute("id", name2);
+                    collapse_body_wrapper.setAttribute("class", "collapse");
+                    // collapse_body_wrapper.setAttribute("data-bs-parent", "#accordion-section"); // Otherwise, the collapse actions will be propogated to parents
+
+                    const collapse_body = document.createElement("div");
+                    collapse_body.setAttribute("class", "card-body");
+
+                    // Recursive calls to traverse its children, will append children to this collapse body
+                    traverseNodes(currentNode.children, collapse_body)
+
+                    // Connect them
+                    collapse_head.appendChild(collapse_a);
+                    collapse_body_wrapper.appendChild(collapse_body)
+                    // Append the current entry to the card body
+                    currentCardBody.appendChild(collapse_head);
+                    currentCardBody.appendChild(collapse_body_wrapper);
+                    
+                } else { // the current node is a file
+                    const filename_field = document.createElement("div");
+                    filename_field.innerHTML = currentNode.name + "   (" + currentNode.inode + ")"
+                    filename_field.setAttribute("class", "files");
+                    currentCardBody.appendChild(filename_field)
+                }
+            }
+
+            return;
         }
 
         document.getElementById('combinedCarvingBtn').addEventListener('click', function() {
