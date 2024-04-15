@@ -87,9 +87,6 @@
             width: 20;
             justify-content: left;
         }
-        #reminder{
-            text-align: right;
-        }
     </style>
     
 </head>
@@ -129,7 +126,6 @@
             <!-- Code adapted from https://www.w3schools.com/bootstrap5/bootstrap_collapse.php for creating collapsed buttons, on April 7th 2024 -->
             <div id="list-files-section">
                 <p id="file-list-title"></p>
-                <p id="reminder"></p>
                 <div id="accordion-section">
                 </div>
             </div>
@@ -315,7 +311,6 @@
                     collapse_section.innerHTML = "" // Clear all previously displayed files
                     var title = "Files in Partition " + index
                     document.getElementById('file-list-title').textContent = title; // Set the section title
-                    document.getElementById('reminder').textContent = "Note: metadata address is shown in ()"; 
 
                     collapse_element_count = 0;
 
@@ -334,15 +329,19 @@
                             const collapse_a = document.createElement("a");
                             // Code adapted from https://www.w3schools.com/jsref/met_element_setattribute.asp for setting an element's attributes dynamically, on April 14th 2024
                             collapse_a.setAttribute("class", "collapsed btn"); 
-                            var name1 = "#collapse" + collapse_element_count
+                            var name1 = "#collapse" + collapse_element_count;
                             collapse_a.setAttribute("data-bs-toggle", "collapse");
                             collapse_a.setAttribute("href", name1)
-                            collapse_a.innerHTML = currentNode.name + "   (" + currentNode.inode + ")";
+                            if (currentNode.deleted) {
+                                collapse_a.innerHTML = currentNode.inode + ": " + currentNode.name + "  (Deleted)"; // Deleted items
+                            } else {
+                                collapse_a.innerHTML = currentNode.inode + ": " + currentNode.name;
+                            }
                             collapse_a.setAttribute("style", "font-weight:bold;") // Set folder text to be bold
 
                             // Body elements:
                             const collapse_body_wrapper = document.createElement("div");
-                            var name2 = "collapse" + collapse_element_count
+                            var name2 = "collapse" + collapse_element_count;
                             collapse_body_wrapper.setAttribute("id", name2);
                             collapse_body_wrapper.setAttribute("class", "collapse");
                             // collapse_body_wrapper.setAttribute("data-bs-parent", "#accordion-section"); // Do not want to close the other when expanding one
@@ -361,7 +360,11 @@
 
                         } else { // the current node is a file
                             const filename_field = document.createElement("div");
-                            filename_field.innerHTML = currentNode.name + "   (" + currentNode.inode + ")";
+                            if (currentNode.deleted) {
+                                filename_field.innerHTML = currentNode.inode + ": " + currentNode.name + "  (Deleted)"; // Deleted items
+                            } else {
+                                filename_field.innerHTML = currentNode.inode + ": " + currentNode.name;
+                            }
                             filename_field.setAttribute("class", "files");
                             collapse_card.appendChild(filename_field)
                         }
@@ -397,13 +400,17 @@
                     collapse_a.setAttribute("class", "collapsed btn"); 
                     var name1 = "#collapse" + collapse_element_count
                     collapse_a.setAttribute("data-bs-toggle", "collapse");
-                    collapse_a.setAttribute("href", name1)
-                    collapse_a.innerHTML = currentNode.name + "   (" + currentNode.inode + ")"
+                    collapse_a.setAttribute("href", name1);
+                    if (currentNode.deleted) {
+                        collapse_a.innerHTML = currentNode.inode + ": " + currentNode.name + "  (Deleted)"; // Deleted items
+                    } else {
+                        collapse_a.innerHTML = currentNode.inode + ": " + currentNode.name;
+                    }
                     collapse_a.setAttribute("style", "font-weight:bold;") // Set folder text to be bold
 
                     // Body elements:
                     const collapse_body_wrapper = document.createElement("div");
-                    var name2 = "collapse" + collapse_element_count
+                    var name2 = "collapse" + collapse_element_count;
                     collapse_body_wrapper.setAttribute("id", name2);
                     collapse_body_wrapper.setAttribute("class", "collapse");
                     // collapse_body_wrapper.setAttribute("data-bs-parent", "#accordion-section"); // Otherwise, the collapse actions will be propogated to parents
@@ -422,7 +429,11 @@
                     
                 } else { // the current node is a file
                     const filename_field = document.createElement("div");
-                    filename_field.innerHTML = currentNode.name + "   (" + currentNode.inode + ")"
+                    if (currentNode.deleted) {
+                        filename_field.innerHTML = currentNode.inode + ": " + currentNode.name + "  (Deleted)"; // Deleted items
+                    } else {
+                        filename_field.innerHTML = currentNode.inode + ": " + currentNode.name;
+                    }
                     filename_field.setAttribute("class", "files");
                     collapse_card.appendChild(filename_field)
                 }
