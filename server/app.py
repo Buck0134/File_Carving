@@ -211,31 +211,28 @@ def list_files():
                 continue
             
             parts = line.strip().split()
-            # print(parts)
             deleted = '*' in parts
             if deleted:
                 star_index = parts.index('*')
+                level = parts[0].count('+')  # Level indicated by '+'
             else:
                 star_index = -1
-            # TODO: Consider * Deleted
-            # Depending on whether the line starts with '+', adjust the index for type and inode
-            # since there are two patterns
-            # Pattern 1: Start with +
-            # Pattern 2: Start with d/d or r/r which means it is at the root directory
+                level = parts[0].count('+')  # Level indicated by '+'
+
             inode_index = 2 if star_index > 0 else 1
             name_index = 3 if star_index > 0 else 2
-
+    
             entry_type = 'directory' if 'd/d' in parts[0] else 'file'
-            inode = parts[inode_index].strip(':').strip('*')  # Remove any colons or asterisks from the inode field
-            name = ' '.join(parts[name_index:]).strip(': "').strip('*')  # Clean up the name field
+            inode = parts[inode_index].strip(':').strip('*')
+            name = ' '.join(parts[name_index:]).strip(': "').strip('*')
+
             # Added deleted for extra name process
             if deleted:
                 name = name.split(' ')
-                if len(name) > 1:
-                    name = name[1]
-                else:
-                    name = name[0]
-            while len(current_path) > 1:
+                name = name[-1] if name else ""
+
+            # Adjust the current_path stack to match the current level of depth
+            while len(current_path) > level + 1:
                 current_path.pop()
 
             parent_node = current_path[-1]
@@ -250,37 +247,9 @@ def list_files():
 
             if entry_type == 'directory':
                 current_path.append(new_node)
-            # # Determine the level by counting the number of + at the start
-            # level = parts[0].count('+') if parts[0].startswith('+') else 0
-
-            # entry_type = 'directory' if 'd/d' in parts[0] else 'file'
-            # print(inode)
-            # inode = parts[inode_index].strip(':')
-            # name = ' '.join(parts[name_index:]).strip(': "')
-
-            # # Manage the stack according to the current level
-            # while len(current_path) > level + 1:
-            #     current_path.pop()
-
-            # parent_node = current_path[-1]
-
-            # # Create a new node
-            # new_node = {
-            #     "name": name,
-            #     "type": entry_type,
-            #     "inode": inode,
-            #     "deleted": deleted,
-            #     "children": [] if entry_type == 'directory' else None
-            # }
-
-            # # Append the new node to the parent's children
-            # parent_node["children"].append(new_node)
-
-            # # If it's a directory, push it onto the stack
-            # if entry_type == 'directory':
-            #     current_path.append(new_node)
 
         return root
+
     return jsonify(parse_fls_output(result.stdout))
 
 if __name__ == '__main__':
