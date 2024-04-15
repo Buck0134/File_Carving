@@ -219,8 +219,18 @@ def list_files():
                 star_index = -1
                 level = parts[0].count('+')  # Level indicated by '+'
 
-            inode_index = 2 if star_index > 0 else 1
-            name_index = 3 if star_index > 0 else 2
+            # deal with the name_index and inode_index since star will actually distrub the level
+            if star_index > 0:
+                inode_index = 2
+            else:
+                inode_index = 1
+            
+
+            if star_index > 0:
+                name_index = 3
+            else:
+                name_index = 2
+        
     
             entry_type = 'directory' if 'd/d' in parts[0] else 'file'
             inode = parts[inode_index].strip(':').strip('*')
