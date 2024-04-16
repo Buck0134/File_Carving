@@ -63,6 +63,22 @@
                 margin-right: 20px;
             }
         }
+        .view-file-button-container{
+            padding-bottom: 20px;
+            display: flex;
+            justify-content: center;
+
+            #viewAllFilesBtn {
+                margin-left: 20px;
+                margin-right: 20px;
+                width: 150px;
+            }
+            #viewDeletedFilesBtn {
+                margin-left: 20px;
+                margin-right: 20px;
+                width: 150px;
+            }
+        }
         #md5Display{
             padding-top: 20px;
             padding-bottom: 30px;
@@ -126,6 +142,10 @@
             <!-- Code adapted from https://www.w3schools.com/bootstrap5/bootstrap_collapse.php for creating collapsed buttons, on April 7th 2024 -->
             <div id="list-files-section">
                 <p id="file-list-title"></p>
+                <div class="view-file-button-container">
+                    <button id="viewAllFilesBtn" style="display:none;">All Files</button>
+                    <button id="viewDeletedFilesBtn" style="display:none;">Deleted Files</button>
+                </div>
                 <div id="accordion-section">
                 </div>
             </div>
@@ -137,6 +157,8 @@
         let filePath = ''; // This will hold the file path state
         var partitions = null; // Stores the partition information
         var collapse_element_count = 0; // For giving unique ids for collapsed buttons
+        var selected_viewfile_partition_start = null; // The start sector of the partition that is seleted to view files
+        var selected_viewfile_partition_index = null; // The index of the partition that is seleted to view files
 
         document.getElementById('filePathForm').addEventListener('submit', function(event) {
             event.preventDefault(); // Prevent the form from submitting the traditional way
@@ -254,7 +276,9 @@
                                 // Code adapted from https://stackoverflow.com/questions/14034737/creating-a-button-dynamically-with-arguments-for-onclick and https://www.w3schools.com/jsref/event_onclick.asp
                                 // for setting onclick function for dynamically created buttons, on April 14th 2024
                                 viewfile_element.onclick = function() {
-                                    getFiles(element.Start, element.Index.substring(0, element.Index.length - 1)); // Get files in this partition
+                                    selected_viewfile_partition_start = element.Start;
+                                    selected_viewfile_partition_index = element.Index.substring(0, element.Index.length - 1);
+                                    getAllFiles(element.Start, element.Index.substring(0, element.Index.length - 1)); // Get files in this partition
                                 }
                             } else {
                                 // If the partition not a file system, no files to view
@@ -296,7 +320,7 @@
                 .catch(error => console.error('Error fetching MMLS data:', error));
         });
 
-        function getFiles (start, index){
+        function getAllFiles (start, index){
             // Call the API to get all files for this file system
             // Referenced https://www.geeksforgeeks.org/how-to-get-url-parameters-using-javascript/ for URL params seperators, on April 14th 2024
             fetch(`/api/list-files?file_path=${encodeURIComponent(filePath)}&start_sector=${encodeURIComponent(start)}`)
@@ -305,6 +329,11 @@
                     // console.log(data)
                     document.getElementById('list-files-section').style.display = 'block'; // show file table
                     document.getElementById('partition-table-section').style.display = 'none'; // hide partition table
+                    // Show 2 view file buttons
+                    document.getElementById('viewAllFilesBtn').style.display = 'block'; 
+                    document.getElementById('viewDeletedFilesBtn').style.display = 'block';
+                    document.getElementById('viewAllFilesBtn').style.backgroundColor = "rgb(51, 62, 116)"; // Highlight All Files button
+                    document.getElementById('viewDeletedFilesBtn').style.backgroundColor = "rgb(128, 137, 185)"; // De highlight the Deleted Files button
 
 
                     const collapse_section = document.getElementById('accordion-section');
@@ -350,7 +379,7 @@
                             collapse_body.setAttribute("class", "card-body");
                             
                             // Recursive call for its children, passing on the current collapsed card's body, will append children to this body
-                            traverseNodes(currentNode.children, collapse_body)
+                            traverseNodes(currentNode.children, collapse_body, false)
 
                             // Connect them
                             collapse_head.appendChild(collapse_a);
@@ -376,7 +405,7 @@
         }
 
         // Recursive helper function to traverse through all the nodes
-        function traverseNodes (childrens, currentCardBody){
+        function traverseNodes (childrens, currentCardBody, forDeletedCall){
             // Base case: there is no child
             if (childrens == null || childrens.length == 0) {
                 return;
@@ -401,11 +430,16 @@
                     var name1 = "#collapse" + collapse_element_count
                     collapse_a.setAttribute("data-bs-toggle", "collapse");
                     collapse_a.setAttribute("href", name1);
-                    if (currentNode.deleted) {
+                    if (forDeletedCall){
+                        collapse_a.innerHTML = currentNode.inode + ": " + currentNode.name; // No need to differentiate
+                    } else { // For all files call, need to differentiate deleted items
+                        if (currentNode.deleted) {
                         collapse_a.innerHTML = currentNode.inode + ": " + currentNode.name + "  (Deleted)"; // Deleted items
-                    } else {
-                        collapse_a.innerHTML = currentNode.inode + ": " + currentNode.name;
+                        } else {
+                            collapse_a.innerHTML = currentNode.inode + ": " + currentNode.name;
+                        }
                     }
+                    
                     collapse_a.setAttribute("style", "font-weight:bold;") // Set folder text to be bold
 
                     // Body elements:
@@ -419,7 +453,7 @@
                     collapse_body.setAttribute("class", "card-body");
 
                     // Recursive calls to traverse its children, will append children to this collapse body
-                    traverseNodes(currentNode.children, collapse_body)
+                    traverseNodes(currentNode.children, collapse_body, forDeletedCall)
 
                     // Connect them
                     collapse_head.appendChild(collapse_a);
@@ -429,10 +463,14 @@
                     
                 } else { // the current node is a file
                     const filename_field = document.createElement("div");
-                    if (currentNode.deleted) {
-                        filename_field.innerHTML = currentNode.inode + ": " + currentNode.name + "  (Deleted)"; // Deleted items
-                    } else {
-                        filename_field.innerHTML = currentNode.inode + ": " + currentNode.name;
+                    if (forDeletedCall){
+                        filename_field.innerHTML = currentNode.inode + ": " + currentNode.name; // No need to differentiate
+                    } else { // For all files call, need to differentiate deleted items
+                        if (currentNode.deleted) {
+                            filename_field.innerHTML = currentNode.inode + ": " + currentNode.name + "  (Deleted)"; // Deleted items
+                        } else {
+                            filename_field.innerHTML = currentNode.inode + ": " + currentNode.name;
+                        }
                     }
                     filename_field.setAttribute("class", "files");
                     collapse_card.appendChild(filename_field)
@@ -444,6 +482,90 @@
 
             return;
         }
+
+        function getDeletedFiles (start, index){
+            // Call the API to get deleted files for this file system
+            // Referenced https://www.geeksforgeeks.org/how-to-get-url-parameters-using-javascript/ for URL params seperators, on April 14th 2024
+            fetch(`/api/list-deleted-files?file_path=${encodeURIComponent(filePath)}&start_sector=${encodeURIComponent(start)}`)
+                .then(response => response.json())
+                .then(data => {
+                    // console.log(data)
+                    document.getElementById('list-files-section').style.display = 'block'; // show file table
+                    document.getElementById('partition-table-section').style.display = 'none'; // hide partition table
+                    // Show 2 view file buttons
+                    document.getElementById('viewAllFilesBtn').style.display = 'block'; 
+                    document.getElementById('viewDeletedFilesBtn').style.display = 'block';
+                    document.getElementById('viewAllFilesBtn').style.backgroundColor = "rgb(128, 137, 185)"; // De highlight All Files button
+                    document.getElementById('viewDeletedFilesBtn').style.backgroundColor = "rgb(51, 62, 116)"; // Highlight Deleted Files button
+
+
+                    const collapse_section = document.getElementById('accordion-section');
+                    collapse_section.innerHTML = "" // Clear all previously displayed files
+                    var title = "Files in Partition " + index
+                    document.getElementById('file-list-title').textContent = title; // Set the section title
+
+                    collapse_element_count = 0;
+
+                    for (var i = 0; i < data.children.length; i ++){
+                        var currentNode = data.children[i];
+
+                        const collapse_card = document.createElement("div");
+                        collapse_card.setAttribute("class", "card");
+
+                        if (currentNode.type == "directory"){
+                            collapse_element_count += 1;
+                            // Header elements:
+                            const collapse_head = document.createElement("div");
+                            collapse_head.setAttribute("class", "card-header");
+
+                            const collapse_a = document.createElement("a");
+                            // Code adapted from https://www.w3schools.com/jsref/met_element_setattribute.asp for setting an element's attributes dynamically, on April 14th 2024
+                            collapse_a.setAttribute("class", "collapsed btn"); 
+                            var name1 = "#collapse" + collapse_element_count;
+                            collapse_a.setAttribute("data-bs-toggle", "collapse");
+                            collapse_a.setAttribute("href", name1)
+                            collapse_a.innerHTML = currentNode.inode + ": " + currentNode.name;
+                            collapse_a.setAttribute("style", "font-weight:bold;") // Set folder text to be bold
+
+                            // Body elements:
+                            const collapse_body_wrapper = document.createElement("div");
+                            var name2 = "collapse" + collapse_element_count;
+                            collapse_body_wrapper.setAttribute("id", name2);
+                            collapse_body_wrapper.setAttribute("class", "collapse");
+                            // collapse_body_wrapper.setAttribute("data-bs-parent", "#accordion-section"); // Do not want to close the other when expanding one
+
+                            const collapse_body = document.createElement("div");
+                            collapse_body.setAttribute("class", "card-body");
+                            
+                            // Recursive call for its children, passing on the current collapsed card's body, will append children to this body
+                            traverseNodes(currentNode.children, collapse_body, true);
+
+                            // Connect them
+                            collapse_head.appendChild(collapse_a);
+                            collapse_body_wrapper.appendChild(collapse_body)
+                            collapse_card.appendChild(collapse_head);
+                            collapse_card.appendChild(collapse_body_wrapper);
+
+                        } else { // the current node is a file
+                            const filename_field = document.createElement("div");
+                            filename_field.innerHTML = currentNode.inode + ": " + currentNode.name;
+                            filename_field.setAttribute("class", "files");
+                            collapse_card.appendChild(filename_field)
+                        }
+
+                        collapse_section.appendChild(collapse_card);                        
+                    }
+                })
+                .catch(error => console.error('Error getting filesystem files:', error));
+        }
+
+        document.getElementById('viewAllFilesBtn').addEventListener('click', function() {
+            getAllFiles(selected_viewfile_partition_start, selected_viewfile_partition_index);
+        });
+
+        document.getElementById('viewDeletedFilesBtn').addEventListener('click', function() {
+            getDeletedFiles(selected_viewfile_partition_start, selected_viewfile_partition_index);
+        });
 
         document.getElementById('combinedCarvingBtn').addEventListener('click', function() {
             // Code adapted from https://stackoverflow.com/questions/23175006/how-to-check-multiple-checkboxes-with-javascript for checking whether checkboxes are checked, on April 7th 2024
