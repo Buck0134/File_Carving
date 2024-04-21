@@ -64,6 +64,7 @@ python3 server/app.py
 ```
 
 ## References:
+- https://stackoverflow.com/questions/3749231/download-file-using-javascript-jquery
 - https://www.w3schools.com/js/js_htmldom_nodes.asp
 - https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table
 - https://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript
@@ -82,6 +83,8 @@ CSS related:
 - https://getbootstrap.com/docs/5.3/getting-started/introduction/
 - https://getbootstrap.com/docs/5.3/layout/columns/
 - https://getbootstrap.com/docs/4.0/content/tables/
+- https://stackoverflow.com/questions/7693224/how-do-i-right-align-div-elements
+
 
 
 

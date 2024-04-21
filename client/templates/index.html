@@ -19,10 +19,19 @@
         #mmlsData-meta {
             white-space: pre; /* Code referenced from https://www.w3schools.com/cssref/pr_text_white-space.php for wrapping text based on whitespances, on April 7th 2024 */
         }
-        button {
+        .normal-button {
             border-radius: 10px;
             height: 30px;
             width: 200px;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: rgb(51, 62, 116);
+            border: 0px;
+            color: white;
+        }
+        .view-files-button{
+            border-radius: 10px;
+            height: 30px;
+            width: 150px;
             font-family: 'Courier New', Courier, monospace;
             background-color: rgb(51, 62, 116);
             border: 0px;
@@ -88,9 +97,23 @@
         }
         .files{
             text-align: left;
+            display: flex;
             padding-top: 10px;
             padding-left: 28px;
             padding-bottom: 10px;
+
+            .carve-file-btn{
+                /* Code adapted from https://stackoverflow.com/questions/7693224/how-do-i-right-align-div-elements for right aligning the div elements, on April 21st 2024 */
+                margin-left: auto; 
+                margin-right: 50px;
+                border-radius: 10px;
+                height: 30px;
+                width: 100px;
+                font-family: 'Courier New', Courier, monospace;
+                background-color: rgb(51, 62, 116);
+                border: 0px;
+                color: white;
+            }
         }
         #accordion-section{
             margin-bottom: 50px;
@@ -118,12 +141,12 @@
                 <label for="filePath">Enter the file path:</label>
                 <input type="text" id="filePath" name="filePath">
                 <div class="hash-button-container">
-                    <button type="submit" class="hash-button">Check MD5 Hash</button>
+                    <button type="submit" class="normal-button">Check MD5 Hash</button>
                 </div>
             </form>
             <p id="md5Display"></p>
             <div class="button-container">
-                <button id="fetchMmlsBtn" style="display:none;">Get Partition Table</button>
+                <button id="fetchMmlsBtn" class="normal-button" style="display:none;">Get Partition Table</button>
             </div>
         </div>
         <div class="col-8">
@@ -133,8 +156,8 @@
                 <!-- Code adapted from https://getbootstrap.com/docs/4.0/content/tables/ for formatting the table through Bootstrap, on April 7th 2024 -->
                 <table id="mmlsData-table" class="table table-striped table-bordered"></table>
                 <div class="carve-button-container">
-                    <button id="combinedCarvingBtn" style="display:none;">Carve Together</button>
-                    <button id="individualCarvingBtn" style="display:none;">Carve Individually</button>
+                    <button id="combinedCarvingBtn" class="normal-button" style="display:none;">Carve Together</button>
+                    <button id="individualCarvingBtn" class="normal-button" style="display:none;">Carve Individually</button>
                 </div>
                 <span id="errors"></span>
             </div>
@@ -143,8 +166,8 @@
             <div id="list-files-section">
                 <p id="file-list-title"></p>
                 <div class="view-file-button-container">
-                    <button id="viewAllFilesBtn" style="display:none;">All Files</button>
-                    <button id="viewDeletedFilesBtn" style="display:none;">Deleted Files</button>
+                    <button id="viewAllFilesBtn" class="normal-button" style="display:none;">All Files</button>
+                    <button id="viewDeletedFilesBtn" class="normal-button" style="display:none;">Deleted Files</button>
                 </div>
                 <div id="accordion-section">
                 </div>
@@ -254,7 +277,7 @@
                             const td_description = document.createElement("td");
                             const td_viewfile = document.createElement("td");
                             // Get contents from data
-                            // Code adpated from https://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript for dynamically creating checkboxes, on April 7th 2024
+                            // Code and all code for dynamically created elements adpated from https://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript for dynamically creating checkboxes, on April 7th 2024
                             var checkbox_element = document.createElement("input")
                             checkbox_element.type = "checkbox"
                             checkbox_element.class = "checkbox"
@@ -270,8 +293,9 @@
                             if (is_filesystem){
                                 viewfile_element = document.createElement("button");
                                 // If the partition has a file system, enable the users to view the files
-                                // Code adapted from https://www.shecodes.io/athena/24803-how-to-change-button-label-with-javascript for updating button's name, on April 14th 2024
+                                // Code and all setting innerHTML code adapted from https://www.shecodes.io/athena/24803-how-to-change-button-label-with-javascript for updating button's name, on April 14th 2024
                                 viewfile_element.innerHTML = "View Files"
+                                viewfile_element.setAttribute("class", "view-files-button");
                                 // Set the onclick function to call the API
                                 // Code adapted from https://stackoverflow.com/questions/14034737/creating-a-button-dynamically-with-arguments-for-onclick and https://www.w3schools.com/jsref/event_onclick.asp
                                 // for setting onclick function for dynamically created buttons, on April 14th 2024
@@ -356,7 +380,7 @@
                             collapse_head.setAttribute("class", "card-header");
 
                             const collapse_a = document.createElement("a");
-                            // Code adapted from https://www.w3schools.com/jsref/met_element_setattribute.asp for setting an element's attributes dynamically, on April 14th 2024
+                            // Code and all setAttribute code adapted from https://www.w3schools.com/jsref/met_element_setattribute.asp for setting an element's attributes dynamically, on April 14th 2024
                             collapse_a.setAttribute("class", "collapsed btn"); 
                             var name1 = "#collapse" + collapse_element_count;
                             collapse_a.setAttribute("data-bs-toggle", "collapse");
@@ -388,14 +412,34 @@
                             collapse_card.appendChild(collapse_body_wrapper);
 
                         } else { // the current node is a file
+                            const file_section = document.createElement("div");
+                            file_section.setAttribute("class", "files");
                             const filename_field = document.createElement("div");
                             if (currentNode.deleted) {
                                 filename_field.innerHTML = currentNode.inode + ": " + currentNode.name + "  (Deleted)"; // Deleted items
                             } else {
                                 filename_field.innerHTML = currentNode.inode + ": " + currentNode.name;
                             }
-                            filename_field.setAttribute("class", "files");
-                            collapse_card.appendChild(filename_field)
+                            file_section.appendChild(filename_field); // Add the filename to the file_section div
+
+                            if (!currentNode.deleted){
+                                // Button for carving the file
+                                const file_carve_button = document.createElement("button");
+                                file_carve_button.innerHTML = "Carve";
+                                file_carve_button.setAttribute("class", "carve-file-btn");
+                                // Set the onclick function to call the API for carving a file
+                                // Code adapted from https://stackoverflow.com/questions/14034737/creating-a-button-dynamically-with-arguments-for-onclick and https://www.w3schools.com/jsref/event_onclick.asp
+                                // for setting onclick function for dynamically created buttons, on April 14th 2024
+                                file_carve_button.onclick = function() {
+                                    var htmlString = file_carve_button.parentElement.children[0].innerHTML; // Get the innerHTML field this button is associated with
+                                    var stringElements = htmlString.split(": "); // Metadata address + filename
+                                    carveFiles(stringElements[0], stringElements[1]); // Carve the selected 
+                                }
+
+                                file_section.appendChild(file_carve_button); // Add the carve button to the file_section div
+                            }
+                            
+                            collapse_card.appendChild(file_section)
                         }
 
                         collapse_section.appendChild(collapse_card);                        
@@ -425,7 +469,7 @@
                     collapse_head.setAttribute("class", "card-header");
 
                     const collapse_a = document.createElement("a");
-                    // Code adapted from https://www.w3schools.com/jsref/met_element_setattribute.asp for setting an element's attributes dynamically, on April 14th 2024
+                    // Code and all setAttribute code adapted from https://www.w3schools.com/jsref/met_element_setattribute.asp for setting an element's attributes dynamically, on April 14th 2024
                     collapse_a.setAttribute("class", "collapsed btn"); 
                     var name1 = "#collapse" + collapse_element_count
                     collapse_a.setAttribute("data-bs-toggle", "collapse");
@@ -462,6 +506,8 @@
                     collapse_card.appendChild(collapse_body_wrapper);
                     
                 } else { // the current node is a file
+                    const file_section = document.createElement("div");
+                    file_section.setAttribute("class", "files");
                     const filename_field = document.createElement("div");
                     if (forDeletedCall){
                         filename_field.innerHTML = currentNode.inode + ": " + currentNode.name; // No need to differentiate
@@ -472,8 +518,26 @@
                             filename_field.innerHTML = currentNode.inode + ": " + currentNode.name;
                         }
                     }
-                    filename_field.setAttribute("class", "files");
-                    collapse_card.appendChild(filename_field)
+                    file_section.appendChild(filename_field); // Add the filename to the file_section div
+
+                    if (!currentNode.deleted){
+                        // Button for carving the file
+                        const file_carve_button = document.createElement("button");
+                        file_carve_button.innerHTML = "Carve";
+                        file_carve_button.setAttribute("class", "carve-file-btn");
+                        // Set the onclick function to call the API for carving a file
+                        // Code adapted from https://stackoverflow.com/questions/14034737/creating-a-button-dynamically-with-arguments-for-onclick and https://www.w3schools.com/jsref/event_onclick.asp
+                        // for setting onclick function for dynamically created buttons, on April 14th 2024
+                        file_carve_button.onclick = function() {
+                            var htmlString = file_carve_button.parentElement.children[0].innerHTML; // Get the innerHTML field this button is associated with
+                            var stringElements = htmlString.split(": "); // Metadata address + filename
+                            carveFiles(stringElements[0], stringElements[1]); // Carve the selected 
+                        }
+
+                        file_section.appendChild(file_carve_button); // Add the carve button to the file_section div
+                    }
+                    
+                    collapse_card.appendChild(file_section)
                 }
 
                 // Append this child's collapse card to parent's body
@@ -559,6 +623,41 @@
                 .catch(error => console.error('Error getting filesystem files:', error));
         }
 
+        function carveFiles (metadata_addr, filename) {
+            console.log(metadata_addr);
+            console.log(filename);
+            console.log(filePath);
+            console.log(selected_viewfile_partition_start);
+
+            // fetch('/api/extract-file-by-inode', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify({ 
+            //         file_path: filePath,
+            //         start_sector: selected_viewfile_partition_start,
+            //         inode: metadata_addr,
+            //         file_name: filename
+            //     })
+            // })
+            // .then(response => response.blob())
+            // .then(blob => {
+            //     // Code retrieved and adapted from https://stackoverflow.com/questions/3749231/download-file-using-javascript-jquery for downloading files, on April 5th 2024
+            //     const url = window.URL.createObjectURL(blob);
+            //     const a = document.createElement('a');
+            //     a.style.display = 'none';
+            //     a.href = url;
+            //     // Name of the downloaded file
+            //     download_filename = filename + ".dd"
+            //     a.download = download_filename;
+            //     document.body.appendChild(a);
+            //     a.click();
+            //     window.URL.revokeObjectURL(url);
+            // })
+            // .catch(error => console.error('Download error:', error));
+
+        }
         document.getElementById('viewAllFilesBtn').addEventListener('click', function() {
             getAllFiles(selected_viewfile_partition_start, selected_viewfile_partition_index);
         });
@@ -615,15 +714,18 @@
                 })
                 .then(response => response.blob())
                 .then(blob => {
+                    // Code retrieved and adapted from https://stackoverflow.com/questions/3749231/download-file-using-javascript-jquery for downloading files, on April 5th 2024
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.style.display = 'none';
                     a.href = url;
-                    // Specify the filename you want to download as
-                    a.download = "Partitions.dd"; //should be dynamic based on user selection
+                    // Name of the downloaded file
+                    a.download = "Partitions.dd";
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
+
+                    alert("The hash is ");
                 })
                 .catch(error => console.error('Download error:', error));
 
@@ -676,16 +778,19 @@
                 })
                 .then(response => response.blob())
                 .then(blob => {
+                    // Code retrieved and adapted from https://stackoverflow.com/questions/3749231/download-file-using-javascript-jquery for downloading files, on April 5th 2024
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.style.display = 'none';
                     a.href = url;
-                    // Specify the filename you want to download as
+                    // Name of the downloaded file
                     download_filename = "Partition" + checkboxes_selected_indices[i] + ".dd"
-                    a.download = download_filename; //should be dynamic based on user selection
+                    a.download = download_filename;
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
+
+                    alert("The hash is ");
                 })
                 .catch(error => console.error('Download error:', error));
 
