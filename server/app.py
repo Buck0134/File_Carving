@@ -343,6 +343,44 @@ def list_deleted_files():
 
     return jsonify(parse_fls_output(result.stdout))
 
+@app.route('/api/extract-file-by-inode', methods=['POST'])
+def extract_file_by_inode():
+    # Extract parameters from POST request
+    file_path = request.json.get('file_path')
+    start_sector = request.json.get('start_sector')
+    inode = request.json.get('inode')
+    file_name = request.json.get('file_name')
+    # Basic input validation
+    if not all([file_path, start_sector, inode]):
+        return jsonify({'error': 'Missing required parameters'}), 400
+
+    try:
+        # Sanitize inputs to prevent command injection
+        file_path = shlex.quote(file_path)
+        start_sector = int(start_sector)
+        inode = int(inode)
+
+        # Ensure the file path is valid
+        if not os.path.isfile(file_path):
+            return jsonify({'error': 'File not found'}), 404
+
+        # Create a temporary file to hold the extracted data
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=file_name)
+
+        # Construct icat command
+        icat_command = f'icat -o {start_sector} {file_path} {inode} > {temp_file.name}'
+
+        # Execute icat command
+        result = subprocess.run(icat_command, shell=True, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            return jsonify({'error': 'icat command failed', 'details': result.stderr}), 500
+
+        # Return the path or contents of the temporary file
+        return send_file(temp_file.name, as_attachment=True)
+
+    except Exception as e:
+        return jsonify({'error': 'An error occurred', 'details': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5001,)
