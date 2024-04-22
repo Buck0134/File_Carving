@@ -629,33 +629,33 @@
             console.log(filePath);
             console.log(selected_viewfile_partition_start);
 
-            // fetch('/api/extract-file-by-inode', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     body: JSON.stringify({ 
-            //         file_path: filePath,
-            //         start_sector: selected_viewfile_partition_start,
-            //         inode: metadata_addr,
-            //         file_name: filename
-            //     })
-            // })
-            // .then(response => response.blob())
-            // .then(blob => {
-            //     // Code retrieved and adapted from https://stackoverflow.com/questions/3749231/download-file-using-javascript-jquery for downloading files, on April 5th 2024
-            //     const url = window.URL.createObjectURL(blob);
-            //     const a = document.createElement('a');
-            //     a.style.display = 'none';
-            //     a.href = url;
-            //     // Name of the downloaded file
-            //     download_filename = filename + ".dd"
-            //     a.download = download_filename;
-            //     document.body.appendChild(a);
-            //     a.click();
-            //     window.URL.revokeObjectURL(url);
-            // })
-            // .catch(error => console.error('Download error:', error));
+            fetch('/api/extract-file-by-inode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    file_path: filePath,
+                    start_sector: selected_viewfile_partition_start,
+                    inode: metadata_addr,
+                    file_name: filename
+                })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                // Code retrieved and adapted from https://stackoverflow.com/questions/3749231/download-file-using-javascript-jquery for downloading files, on April 5th 2024
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                // Name of the downloaded file
+                download_filename = filename
+                a.download = download_filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => console.error('Download error:', error));
 
         }
         document.getElementById('viewAllFilesBtn').addEventListener('click', function() {
