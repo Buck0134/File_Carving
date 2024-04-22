@@ -351,7 +351,7 @@ def extract_file_by_inode():
     inode = request.json.get('inode')
     file_name = request.json.get('file_name')
     # Basic input validation
-    if not all([file_path, start_sector, inode]):
+    if not all([file_path, start_sector, inode, file_name]):
         return jsonify({'error': 'Missing required parameters'}), 400
 
     try:
@@ -374,10 +374,109 @@ def extract_file_by_inode():
         result = subprocess.run(icat_command, shell=True, capture_output=True, text=True)
 
         if result.returncode != 0:
+            os.remove(temp_file.name)  # Clean up temporary file
             return jsonify({'error': 'icat command failed', 'details': result.stderr}), 500
 
-        # Return the path or contents of the temporary file
+        # Return the contents of the temporary file
         return send_file(temp_file.name, as_attachment=True)
+
+    except Exception as e:
+        return jsonify({'error': 'An error occurred', 'details': str(e)}), 500
+
+@app.route('/api/get-file-md5-by-inode', methods=['POST'])
+def get_file_md5_by_inode():
+    # Extract parameters from POST request
+    file_path = request.json.get('file_path')
+    start_sector = request.json.get('start_sector')
+    inode = request.json.get('inode')
+    file_name = request.json.get('file_name')
+
+    # Basic input validation
+    if not all([file_path is not None, start_sector is not None, inode is not None, file_name is not None]):
+        return jsonify({'error': 'Missing required parameters'}), 400
+
+    try:
+        # Sanitize inputs to prevent command injection
+        file_path = shlex.quote(file_path)
+        start_sector = int(start_sector)
+        inode = int(inode)
+
+        # Ensure the file path is valid
+        if not os.path.isfile(file_path):
+            return jsonify({'error': 'File not found'}), 404
+
+        # Create a temporary file to hold the extracted data
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=file_name)
+
+        # Construct icat command
+        icat_command = f'icat -o {start_sector} {file_path} {inode} > {temp_file.name}'
+
+        # Execute icat command
+        result = subprocess.run(icat_command, shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            os.remove(temp_file.name)  # Clean up temporary file
+            return jsonify({'error': 'icat command failed', 'details': result.stderr}), 500
+
+        # Calculate MD5 hash of the temporary file
+        with open(temp_file.name, 'rb') as file:
+            file_bytes = file.read()
+            md5_hash = hashlib.md5(file_bytes).hexdigest()
+
+        # Clean up the temporary file
+        os.remove(temp_file.name)
+
+        return jsonify({'md5_hash': md5_hash})
+
+    except Exception as e:
+        return jsonify({'error': 'An error occurred', 'details': str(e)}), 500
+
+@app.route('/api/get-md5-data-to-download', methods=['POST'])
+def get_data_md5_by_sector():
+    # Extract parameters from POST request
+    file_path = request.json.get('file_path')
+    start_sector = request.json.get('start_sector')
+    length = request.json.get('length')
+    byte_size = request.json.get('byte_size', 512)  # Default byte size is 512
+
+    # Basic input validation
+    ## 0 is treated a Null so have to change this
+    if not all([file_path is not None, start_sector is not None, length is not None, byte_size is not None]):
+        return jsonify({'error': 'Missing required parameters'}), 400
+
+    try:
+        # Sanitize inputs to prevent command injection
+        file_path = shlex.quote(file_path)
+        start_sector = int(start_sector)
+        length = int(length)
+        byte_size = int(byte_size)
+        skip = start_sector
+
+        # Ensure file_path is safe (additional checks might be needed)
+        if not os.path.isfile(file_path):
+            return jsonify({'error': 'File not found'}), 404
+
+        # Create a temporary file to hold the extracted data
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+
+        # Construct dd command
+        dd_command = f'dd if={file_path} of={temp_file.name} bs={byte_size} count={length} skip={skip}'
+
+        # Execute dd command
+        result = subprocess.run(dd_command, shell=True, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            return jsonify({'error': 'dd command failed', 'details': result.stderr}), 500
+
+        # Compute MD5 hash
+        with open(temp_file.name, 'rb') as file:
+            file_bytes = file.read()
+            md5_hash = hashlib.md5(file_bytes).hexdigest()
+
+        # Optionally clean up the temporary file if no longer needed immediately after sending
+        os.unlink(temp_file.name)
+
+        # Return the hash and optionally the path or contents of the temporary file
+        return jsonify({'md5_hash': md5_hash})
 
     except Exception as e:
         return jsonify({'error': 'An error occurred', 'details': str(e)}), 500
