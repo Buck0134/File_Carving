@@ -624,11 +624,7 @@
         }
 
         function carveFiles (metadata_addr, filename) {
-            console.log(metadata_addr);
-            console.log(filename);
-            console.log(filePath);
-            console.log(selected_viewfile_partition_start);
-
+            // Call API to carve and download file
             fetch('/api/extract-file-by-inode', {
                 method: 'POST',
                 headers: {
@@ -656,6 +652,26 @@
                 window.URL.revokeObjectURL(url);
             })
             .catch(error => console.error('Download error:', error));
+
+            // Call API to get the MD5 sum of the downloaded file
+            fetch('/api/get-file-md5-by-inode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    file_path: filePath,
+                    start_sector: selected_viewfile_partition_start,
+                    inode: metadata_addr,
+                    file_name: filename
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert_message = "MD5 Hash of Downloaded" + filename + ": " + data.md5_hash;
+                alert(alert_message);
+            })
+            .catch(error => console.error('Error fetching MD5 hash of the file:', error));
 
         }
         document.getElementById('viewAllFilesBtn').addEventListener('click', function() {
@@ -724,10 +740,28 @@
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
-
-                    alert("The hash is ");
                 })
                 .catch(error => console.error('Download error:', error));
+
+                // Call API to get MD5 hash of the combined partition
+                fetch('/api/get-md5-data-to-download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        file_path: filePath,
+                        start_sector: startSector,
+                        length: carvingLength,
+                        byte_size: sectorSize
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert_message = "MD5 Hash of Downloaded Combined Partition: " + data.md5_hash;
+                    alert(alert_message);
+                })
+                .catch(error => console.error('Error fetching MD5 hash of the combined partition:', error));
 
             } else {
                 // Code referenced https://www.w3schools.com/jsref/met_win_alert.asp for alerting a message to users, on April 7th 2024
@@ -759,6 +793,7 @@
             });
             var sectorSize = 512;
 
+            var hashes_array = [];
             // Call API multiple times to carve the partitions (INDIVIDUALLY)
             for (let i = 0; i < checkboxes_selected_indices.length; i++){
                 startSector = startSectors[i];
@@ -789,13 +824,42 @@
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
-
-                    alert("The hash is ");
                 })
                 .catch(error => console.error('Download error:', error));
-
             }
 
+            // Call API to get the MD5 hashes for the files
+            for (let i = 0; i < checkboxes_selected_indices.length; i++){
+                startSector = startSectors[i];
+                carvingLength = carvingLengths[i];
+                // Call API to get MD5 hash of the combined partition
+                fetch('/api/get-md5-data-to-download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        file_path: filePath,
+                        start_sector: startSector,
+                        length: carvingLength,
+                        byte_size: sectorSize
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    hashes_array.push(data.md5_hash)
+                })
+                .catch(error => console.error('Error fetching MD5 hash of the partitions:', error));
+            }
+
+            // Code adapted from https://builtin.com/software-engineering-perspectives/javascript-sleep for waiting sometime for code to execute, on April 21st, 2024
+            setTimeout(() => {
+                var alert_message= "MD5 Hashes of Downloaded Partitions: \n";
+                for (let i = 0; i < checkboxes_selected_indices.length; i++){
+                    alert_message += "Partition" + checkboxes_selected_indices[i] + ".dd" + ": " + hashes_array[i] + "\n";
+                }
+                alert(alert_message); // Print the hashes to the user
+            }, 600*checkboxes_selected_indices.length)
         });
     </script>
 </body>

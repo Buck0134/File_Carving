@@ -76,7 +76,8 @@ python3 server/app.py
 - https://www.w3schools.com/jsref/event_onclick.asp
 - https://www.geeksforgeeks.org/how-to-get-url-parameters-using-javascript/
 - https://www.w3schools.com/jsref/met_element_setattribute.asp
-- https://www.w3schools.com/bootstrap5/bootstrap_collapse.php</br>
+- https://www.w3schools.com/bootstrap5/bootstrap_collapse.php
+- https://builtin.com/software-engineering-perspectives/javascript-sleep</br>
 CSS related:
 - https://www.w3schools.com/cssref/pr_text_white-space.php
 - https://www.shecodes.io/athena/1837-how-to-put-2-images-on-one-line-with-css
