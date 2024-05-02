@@ -18,17 +18,31 @@ The File Carving Application is designed to streamline and automate the file car
 
 ### Prerequisites
 
-Before you begin, ensure you have Python 3 installed on your system. This application has been tested on UNIX/Linux and macOS systems.
+Before you begin, ensure you have Python 3 installed on your system. This application has been tested on UNIX/Linux and macOS systems. You will also need to clone the repository on your local machine. 
+
+    git clone https://github.com/Buck0134/File_Carving.git
+
+## Start the Application using created script
+
+1. **For Linux Based Machine**
+    Grant execute permissions to the starting script
+    ```sh
+    chmod +x start_application.sh
+    ```
+
+    Start the Application by running the script
+    ```
+    ./start_application.sh
+    ```
+2. **For Windows Based Machine**
+    Double click on ```start_application.bat``` to start the application
+
+
+## Start the Application using Manual Setup
+
+You can use the following commands to manually install dependencies and start up the application
 
 ### Installation
-
-1. **Clone the repository**
-
-    Begin by cloning the repository to your local machine:
-
-    ```sh
-    git clone https://github.com/Buck0134/File_Carving.git
-    ```
 
 2. **Set up a virtual environment**
 
