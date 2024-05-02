@@ -668,7 +668,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                alert_message = "MD5 Hash of Downloaded" + filename + ": " + data.md5_hash;
+                alert_message = "MD5 Hash of Downloaded " + filename + ": " + data.md5_hash;
                 alert(alert_message);
             })
             .catch(error => console.error('Error fetching MD5 hash of the file:', error));
