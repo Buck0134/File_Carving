@@ -18,7 +18,7 @@ The File Carving Application is designed to streamline and automate the file car
 
 ### Prerequisites
 
-Before you begin, ensure you have Python 3 installed on your system. This application has been tested on UNIX/Linux and macOS systems. You will also need to clone the repository on your local machine. 
+Before you begin, ensure you have Python 3 and Sleuth Kit installed on your system. This application has been tested on UNIX/Linux and macOS systems. You will also need to clone the repository on your local machine. 
 
     git clone https://github.com/Buck0134/File_Carving.git
 
@@ -78,27 +78,27 @@ python3 server/app.py
 ```
 
 ## References:
-- https://stackoverflow.com/questions/3749231/download-file-using-javascript-jquery
-- https://www.w3schools.com/js/js_htmldom_nodes.asp
-- https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table
-- https://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript
-- https://stackoverflow.com/questions/23175006/how-to-check-multiple-checkboxes-with-javascript
-- https://www.geeksforgeeks.org/convert-a-string-to-an-integer-in-javascript/
-- https://www.w3schools.com/jsref/met_win_alert.asp 
-- https://www.shecodes.io/athena/24803-how-to-change-button-label-with-javascript
-- https://stackoverflow.com/questions/14034737/creating-a-button-dynamically-with-arguments-for-onclick
-- https://www.w3schools.com/jsref/event_onclick.asp
-- https://www.geeksforgeeks.org/how-to-get-url-parameters-using-javascript/
-- https://www.w3schools.com/jsref/met_element_setattribute.asp
-- https://www.w3schools.com/bootstrap5/bootstrap_collapse.php
-- https://builtin.com/software-engineering-perspectives/javascript-sleep</br>
+- Stackoverflow.com for downloading files: https://stackoverflow.com/questions/3749231/download-file-using-javascript-jquery
+- w3schools.com for appending children to an HTML element: https://www.w3schools.com/js/js_htmldom_nodes.asp
+- stackoverflow.com for removing rows in a table: https://stackoverflow.com/questions/7271490/delete-all-rows-in-an-html-table
+- stackoverflow.com for dynamically creating checkboxes: https://stackoverflow.com/questions/866239/creating-the-checkbox-dynamically-using-javascript
+- stackoverflow.com for checking whether checkboxes are checked: https://stackoverflow.com/questions/23175006/how-to-check-multiple-checkboxes-with-javascript
+- geeksforgeeks.org for for converting string to integers in Javascript: https://www.geeksforgeeks.org/convert-a-string-to-an-integer-in-javascript/
+- w3schools.com for for alerting a message to users: https://www.w3schools.com/jsref/met_win_alert.asp 
+- shecodes.io for for updating button's name: https://www.shecodes.io/athena/24803-how-to-change-button-label-with-javascript
+- stackoverflow for setting onclick function for dynamically created buttons: https://stackoverflow.com/questions/14034737/creating-a-button-dynamically-with-arguments-for-onclick
+- w3schools.com for setting onclick function for dynamically created buttons: https://www.w3schools.com/jsref/event_onclick.asp
+- geeksforgeeks for URL params seperators: https://www.geeksforgeeks.org/how-to-get-url-parameters-using-javascript/
+- w3schools.com for setting an element's attributes dynamically: https://www.w3schools.com/jsref/met_element_setattribute.asp
+- w3schools.com for creating collapsed buttons: https://www.w3schools.com/bootstrap5/bootstrap_collapse.php
+- builtin.com for waiting sometime during execution: https://builtin.com/software-engineering-perspectives/javascript-sleep</br>
 CSS related:
-- https://www.w3schools.com/cssref/pr_text_white-space.php
+- w3schools.com for wrapping text based on whitespances: https://www.w3schools.com/cssref/pr_text_white-space.php
 - https://www.shecodes.io/athena/1837-how-to-put-2-images-on-one-line-with-css
-- https://getbootstrap.com/docs/5.3/getting-started/introduction/
-- https://getbootstrap.com/docs/5.3/layout/columns/
-- https://getbootstrap.com/docs/4.0/content/tables/
-- https://stackoverflow.com/questions/7693224/how-do-i-right-align-div-elements
+- getbootstrap.com for putting 2 elements in one line: https://getbootstrap.com/docs/5.3/getting-started/introduction/
+- getbootstrap.com for utilizing columns to create a side bar in Bootstrap: https://getbootstrap.com/docs/5.3/layout/columns/
+- getbootstrap.com for formatting the table through Bootstrap: https://getbootstrap.com/docs/4.0/content/tables/
+- stackoverflow.com for right aligning the div elements: https://stackoverflow.com/questions/7693224/how-do-i-right-align-div-elements
 
 
 
